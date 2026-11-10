@@ -11,7 +11,7 @@
 ![Tests](https://img.shields.io/badge/테스트-23개_통과-6E5AA8?style=flat-square)
 ![Version](https://img.shields.io/badge/version-0.1.0-F3C969?style=flat-square)
 
-[APK 받기](apk/봇듀_다음은요_release.apk) · [개발일지](docs/개발일지.md) · [시연 방법](#실행)
+[**시연 영상 (60초)**](docs/demo.mp4) · [APK 받기](apk/봇듀_다음은요_release.apk) · [개발일지](docs/개발일지.md) · [시연 방법](#실행)
 
 </div>
 
@@ -96,6 +96,7 @@ adb shell am start -n com.botdue.daeum/.MainActivity --es step TUNNEL_FIRST --ez
 
 - [x] 판정 엔진 + 단위 테스트 23개 (길 카드, 길 바뀜 문장, 터널 단계 예고, 보호자 알림·말 알아듣기, 힘든 순간 묶기, 예고 앞당기기)
 - [x] 화면 6종 + 시연 시나리오, 터널 노래 실제 재생·오디오 포커스 확인 (휴대폰 에뮬레이터)
+- [x] 시연 영상 60초 (`docs/demo.mp4`, 에뮬레이터 실제 녹화 6장면)
 - [ ] Pleos Connect 에뮬레이터에서 NaviHelper·Vehicle 콜백 실제 연결 (`PleosSignalSource`)
 - [ ] SDK 확인: 안전벨트를 좌석별로 구분해 받을 수 있는지, 앰비언트 라이트 제어, TBT로 터널 길이·끝 지점
 - [ ] 보호자 "힘들어했어" STT 연결 (지금은 도착 화면 버튼)
