@@ -11,7 +11,11 @@
 ![Tests](https://img.shields.io/badge/테스트-28개_통과-6E5AA8?style=flat-square)
 ![Version](https://img.shields.io/badge/version-0.2.0-F3C969?style=flat-square)
 
-[**시연 영상 (60초)**](docs/demo.mp4) · [APK 받기](apk/봇듀_다음은요_release.apk) · [개발일지](docs/개발일지.md) · [시연 방법](#실행)
+[**시연 영상**](docs/demo.mp4) · [APK 받기](apk/봇듀_다음은요_release.apk) · [개발일지](docs/개발일지.md) · [시연 방법](#실행)
+
+<img src="docs/mockups/daeum_reroute.jpg" width="100%" alt="차 안 중앙 디스플레이: 왼쪽 계기판, 가운데 내비, 오른쪽 다음은요 앱 창에 길이 바뀐 칸이 보라색 점선으로 표시된 모습">
+
+<sub>운전석과 내비는 가상 목업, 오른쪽 앱 창은 에뮬레이터 실제 화면(v0.2.0)</sub>
 
 </div>
 
@@ -49,8 +53,10 @@
 | 출발 전 | 터널 1분 전 | 길이 바뀌었을 때 |
 | --- | --- | --- |
 | <img src="docs/screens/START.png" width="260"> | <img src="docs/screens/TUNNEL_FIRST.png" width="260"> | <img src="docs/screens/REROUTE.png" width="260"> |
-| **보호자 안심 신호** | **쉼터 칸이 들어감** | **도착** |
-| <img src="docs/screens/BELT.png" width="260"> | <img src="docs/screens/REST.png" width="260"> | <img src="docs/screens/ARRIVED.png" width="260"> |
+| **운전 중 "표시해"** | **보호자 안심 신호** | **쉼터 칸이 들어감** |
+| <img src="docs/screens/MARKED.png" width="260"> | <img src="docs/screens/BELT.png" width="260"> | <img src="docs/screens/REST.png" width="260"> |
+| **도착: 표시한 순간 확인** | | |
+| <img src="docs/screens/ARRIVED.png" width="260"> | | |
 
 **이동 노트 (주차 중, 가로 2칸)** — 화면 속 숫자는 예시
 
