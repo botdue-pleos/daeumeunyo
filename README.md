@@ -107,6 +107,7 @@ adb shell am start -n com.botdue.daeum/.MainActivity --es step MARKED --ez quiet
 - 개발: Android Studio, Kotlin(Jetpack Compose), minSdk 28
 - 테스트: Android Emulator(API 35). `adb shell wm size 920x1414` + `adb shell wm density 240`으로 Pleos Connect 앱 창 세로 1칸(920×1330)과 시스템 바에 맞춰 확인했다
 - 목표 플랫폼: Pleos Connect Emulator v2.1.0(AAOS). Pleos 이미지에서의 실연결 확인은 2차 PT 전에 할 예정이다 (아직 하지 않음)
+- 쓰는 SDK: 공모전에서 허용한 Vehicle·NaviHelper·TextToSpeech·SpeechToText만. 보호자 말은 SpeechToText SDK의 ON_DEVICE 모드로만 처리하고 외부 음성 인식 서비스로 보내지 않는다
 
 ## 현재 상태
 
