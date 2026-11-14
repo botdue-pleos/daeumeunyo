@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.ToneGenerator
 import android.speech.tts.TextToSpeech
 import com.botdue.daeum.R
 import java.util.Locale
@@ -34,6 +35,22 @@ class Speaker(context: Context) {
     }
 
     fun release() = tts.shutdown()
+}
+
+/**
+ * 보호자가 "표시해"라고 했을 때 내는 짧은 소리 하나. 말(TTS)로 되읽지 않는다:
+ * 스피커는 차 안 모두에게 들리므로 동승자가 "자기 얘기"를 듣지 않게 한다.
+ */
+class MarkTone {
+    private val tone = runCatching { ToneGenerator(AudioManager.STREAM_NOTIFICATION, 60) }.getOrNull()
+
+    fun play() {
+        tone?.startTone(ToneGenerator.TONE_PROP_ACK, 120)
+    }
+
+    fun release() {
+        tone?.release()
+    }
 }
 
 /**

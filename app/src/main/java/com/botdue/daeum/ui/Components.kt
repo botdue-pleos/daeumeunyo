@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -81,14 +82,14 @@ fun Modifier.nowRing(width: Dp, radius: Dp): Modifier =
     border(width, C.Now, RoundedCornerShape(radius))
 
 @Composable
-fun PrimaryButton(text: String, modifier: Modifier = Modifier, height: Int = 104, onClick: () -> Unit) {
+fun PrimaryButton(text: String, modifier: Modifier = Modifier, height: Int = 104, size: Int = 36, onClick: () -> Unit) {
     Box(
         modifier
             .height(height.px)
             .background(C.Ink, RoundedCornerShape(50))
             .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { T(text, 36.tx, color = C.Card, weight = FontWeight.ExtraBold) }
+    ) { T(text, size.tx, color = C.Card, weight = FontWeight.ExtraBold) }
 }
 
 @Composable
@@ -142,3 +143,33 @@ fun Chip(pic: Pic, text: String, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * 보호자에게 하는 존댓말 한 줄. 그림 카드 밖에, 보조 색으로 둔다.
+ * 카드 안 굵은 반말 = 동승자에게 하는 말, 카드 밖 이 줄 = 보호자에게 하는 말로 나눠 보이게.
+ */
+@Composable
+fun GuardianLine(text: String, modifier: Modifier = Modifier, size: Int = 26) {
+    Row(modifier.padding(horizontal = 8.px), horizontalArrangement = Arrangement.spacedBy(16.px)) {
+        Box(Modifier.padding(top = 6.px).width(6.px).height((size + 6).px).background(C.Done, RoundedCornerShape(3.px)))
+        T(text, size.tx, color = C.Sub)
+    }
+}
+
+/**
+ * 운전 중 "표시해" 뒤 구석에 몇 초 뜨는 작은 칩. 경고색(빨강·보라)은 쓰지 않고,
+ * "힘들어" 같은 말 없이 붙은 상황 이름만 쓴다 ("표시됨 · 방금 터널").
+ */
+@Composable
+fun MarkChip(situation: String?, modifier: Modifier = Modifier) {
+    Row(
+        modifier
+            .background(C.Card, RoundedCornerShape(50))
+            .border(2.px, C.Ink.copy(alpha = 0.35f), RoundedCornerShape(50))
+            .padding(horizontal = 22.px, vertical = 8.px),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.px),
+    ) {
+        Picto(Pic.CHECK, 26.px, C.DoneInk, strokeWidth = 10f)
+        T(if (situation != null) "표시됨 · 방금 $situation" else "표시됨 · 상황 없음", 22.tx, color = C.Ink, weight = FontWeight.SemiBold)
+    }
+}

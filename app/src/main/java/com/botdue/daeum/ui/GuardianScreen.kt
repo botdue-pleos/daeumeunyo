@@ -1,6 +1,7 @@
 package com.botdue.daeum.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import com.botdue.daeum.engine.GuardianAlert
 
 /**
- * 4. 보호자 안심 신호. 운전하는 보호자에게만 들리는 한 줄을 화면에도 크게.
- * 버튼은 두 개뿐이고, 말("잠깐 쉬자")로도 된다. 빨강 대신 겨자색: 뒷자리 동승자가 화면을 봐도 놀라지 않게.
+ * 4. 보호자 안심 신호. 소리는 차 안 모두에게 들리므로 뒷자리가 들어도 괜찮은 말([GuardianAlert.spoken])로 하고,
+ * 무슨 일인지는 화면에만 쓴다. 버튼은 두 개뿐이고, 말("잠깐 쉬자")로도 된다.
+ * 겨자색은 "지금 칸"에만 쓰므로 여기는 흰 바탕 + 진한 잉크 테두리. 빨강은 쓰지 않는다.
  */
 @Composable
 fun GuardianScreen(alert: GuardianAlert, destination: String, onRest: () -> Unit, onDismiss: () -> Unit) {
@@ -25,20 +27,28 @@ fun GuardianScreen(alert: GuardianAlert, destination: String, onRest: () -> Unit
             .fillMaxSize()
             .background(C.Felt)
             .padding(start = 64.px, end = 64.px, top = 64.px, bottom = 56.px),
-        verticalArrangement = Arrangement.spacedBy(32.px),
+        verticalArrangement = Arrangement.spacedBy(28.px),
     ) {
-        T("운전하는 분께만 들려요", 26.tx, color = C.Sub, weight = FontWeight.SemiBold)
+        T("보호자께 알려요", 26.tx, color = C.Sub, weight = FontWeight.SemiBold)
         Column(
             Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(C.Now, RoundedCornerShape(40.px))
-                .padding(start = 52.px, end = 52.px, top = 56.px, bottom = 52.px),
-            verticalArrangement = Arrangement.spacedBy(32.px, Alignment.CenterVertically),
+                .border(8.px, C.GuardianEdge, RoundedCornerShape(40.px))
+                .background(C.Card, RoundedCornerShape(40.px))
+                .padding(start = 52.px, end = 52.px, top = 44.px, bottom = 40.px),
+            verticalArrangement = Arrangement.spacedBy(28.px, Alignment.CenterVertically),
         ) {
-            Picto(if (alert.kind == GuardianAlert.Kind.BELT) Pic.BELT else Pic.CAR, 150.px, strokeWidth = 5.5f)
-            T(alert.title.replace("가 ", "가\n"), 62.tx, weight = FontWeight.ExtraBold, lineHeight = 1.2f)
+            Picto(if (alert.kind == GuardianAlert.Kind.BELT) Pic.BELT else Pic.CAR, 120.px, strokeWidth = 5.5f)
+            T(alert.title.replace("를 ", "를\n"), 58.tx, weight = FontWeight.ExtraBold, lineHeight = 1.2f)
             alert.stopHint?.let { T(it, 32.tx, weight = FontWeight.SemiBold) }
+            Column(
+                Modifier.fillMaxWidth().background(C.Felt, RoundedCornerShape(24.px)).padding(horizontal = 28.px, vertical = 22.px),
+                verticalArrangement = Arrangement.spacedBy(8.px),
+            ) {
+                T("차 안에 들리는 말", 22.tx, color = C.Sub, weight = FontWeight.ExtraBold)
+                T("\"${alert.spoken}\"", 28.tx, weight = FontWeight.SemiBold)
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(16.px)) {
             PrimaryButton("쉼터 들르기", Modifier.weight(1f), height = 112, onClick = onRest)
@@ -48,19 +58,18 @@ fun GuardianScreen(alert: GuardianAlert, destination: String, onRest: () -> Unit
             Picto(Pic.MIC, 44.px, strokeWidth = 7f)
             T("말로 해도 돼요. \"잠깐 쉬자\"", 28.tx)
         }
-        Column(
+        GuardianLine("쉼터에 들르면 뒷자리에도 이렇게 미리 말하고, 오늘의 길에 쉼터 칸을 넣어요", size = 24)
+        // 동승자에게 하는 말은 그림 카드 안에
+        Row(
             Modifier
                 .fillMaxWidth()
                 .background(C.Card, RoundedCornerShape(32.px))
-                .padding(horizontal = 36.px, vertical = 32.px),
-            verticalArrangement = Arrangement.spacedBy(18.px),
+                .padding(horizontal = 36.px, vertical = 28.px),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(24.px),
         ) {
-            T("쉼터에 들르면 뒷자리에도 미리 말해요", 24.tx, color = C.Sub, weight = FontWeight.ExtraBold)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.px)) {
-                Picto(Pic.REST, 88.px)
-                T("잠깐 쉬었다가\n${destination}에 가", 36.tx, weight = FontWeight.ExtraBold)
-            }
-            T("오늘의 길에 쉼터 칸이 하나 들어가요", 24.tx, color = C.Sub)
+            Picto(Pic.REST, 88.px)
+            T("잠깐 쉬었다가\n${destination}에 가", 36.tx, weight = FontWeight.ExtraBold)
         }
     }
 }

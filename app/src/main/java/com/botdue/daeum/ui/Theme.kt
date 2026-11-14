@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
  * 특수교육에서 쓰는 "그림 일정표 띠"에서 가져온 색.
  * 자극이 적은 세이지색 펠트 바탕에 흰 그림 카드. 강조는 두 가지만:
  * 겨자색 = 지금 칸, 보라색 점선 = 바뀐 칸. 경고에도 빨강은 쓰지 않는다 (동승자를 놀라게 하지 않게).
+ * 보호자 알림은 지금 칸과 겹치지 않게 겨자색 대신 흰 바탕 + 진한 잉크 테두리([GuardianEdge]).
  */
 object C {
     val Felt = Color(0xFFDDE6DC)
@@ -32,6 +33,8 @@ object C {
     val Changed = Color(0xFF6E5AA8)
     /** 괜찮게 지나간 칸 */
     val Calm = Color(0xFFA7B7A9)
+    /** 보호자 알림 테두리 */
+    val GuardianEdge = Ink
     /** 어두운 띠 위 보조 글자 */
     val OnInkSub = Color(0xFFC9D8D5)
 }

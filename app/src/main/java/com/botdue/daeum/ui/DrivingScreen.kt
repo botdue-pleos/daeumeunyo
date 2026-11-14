@@ -25,6 +25,7 @@ import com.botdue.daeum.engine.TunnelStage
 /**
  * 2. 주행 중: 지금 칸 하나를 크게. 운전자는 보지 않는다 (동승자·조수석용, 말은 차가 한다).
  * 터널 예고 중이면 터널 문장과 노래 띠를 보여 준다.
+ * 카드 안은 동승자에게 하는 반말, 카드 밖 보조 색 줄은 보호자에게 하는 존댓말.
  */
 @Composable
 fun DrivingScreen(
@@ -38,12 +39,13 @@ fun DrivingScreen(
 ) {
     val card = cards[current]
     val next = cards.getOrNull(current + 1)
-    val (title, sub) = when {
+    // (카드 안 반말, 카드 안 덧붙임, 카드 밖 보호자 줄)
+    val (title, sub, guardian) = when {
         card.kind == LegKind.TUNNEL && tunnel == TunnelStage.FIRST ->
-            "곧 터널이야\n금방 밝아져" to "1분 뒤에 들어가요. 30초 전에 한 번 더 말해 줄게요"
+            Triple("곧 터널이야\n금방 밝아져", "", "1분 뒤에 들어가요. 30초 전에 한 번 더 말해 줄게요")
         card.kind == LegKind.TUNNEL && tunnel >= TunnelStage.SECOND && tunnel < TunnelStage.PASSED ->
-            "이제 터널에 들어가\n노래 들으면서 가자" to "어두워져도 금방 밝아져요"
-        else -> card.text to (next?.let { "다음은 ${it.text}" } ?: "")
+            Triple("이제 터널에 들어가\n노래 들으면서 가자", "어두워져도 금방 밝아져", "30초 뒤에 들어가요")
+        else -> Triple(card.text, next?.let { "다음은 ${it.text}" } ?: "", null)
     }
     Column(
         Modifier
@@ -66,9 +68,9 @@ fun DrivingScreen(
             Picto(card.kind.pic(), 260.px, strokeWidth = 4.5f)
             T(title, 64.tx, weight = FontWeight.ExtraBold, align = TextAlign.Center, lineHeight = 1.2f)
             if (sub.isNotEmpty()) T(sub, 30.tx, color = C.Sub, align = TextAlign.Center)
-            Spacer(Modifier.weight(1f))
-            if (musicOn) MusicBar()
         }
+        guardian?.let { GuardianLine(it) }
+        if (musicOn) MusicBar()
         Row(horizontalArrangement = Arrangement.spacedBy(16.px)) {
             if (recirculationOn) Chip(Pic.RECIRC, "바깥 공기 막음", Modifier.weight(1f))
             Row(
@@ -117,9 +119,12 @@ fun RerouteScreen(change: RouteChange, current: Int, songs: Int, reason: String)
             .padding(start = 64.px, end = 64.px, top = 64.px, bottom = 56.px),
         verticalArrangement = Arrangement.spacedBy(32.px),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(14.px)) {
-            T(if (change.sameDestination) "길이 바뀌었어\n그래도 ${place}에 가" else "가는 곳이 바뀌었어\n이제 ${place}에 가", 60.tx, weight = FontWeight.ExtraBold, lineHeight = 1.2f)
-            T(reason, 28.tx, color = C.Sub)
+        Column(verticalArrangement = Arrangement.spacedBy(18.px)) {
+            // 동승자에게 하는 말은 카드 안, 까닭(보호자용)은 카드 밖
+            Box(Modifier.fillMaxWidth().background(C.Card, RoundedCornerShape(32.px)).padding(horizontal = 40.px, vertical = 30.px)) {
+                T(if (change.sameDestination) "길이 바뀌었어\n그래도 ${place}에 가" else "가는 곳이 바뀌었어\n이제 ${place}에 가", 58.tx, weight = FontWeight.ExtraBold, lineHeight = 1.2f)
+            }
+            GuardianLine(reason, size = 28)
         }
         VerticalStrip(
             change.cards,
