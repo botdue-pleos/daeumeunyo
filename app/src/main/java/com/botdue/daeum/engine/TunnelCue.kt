@@ -14,7 +14,7 @@ enum class TunnelStage { NONE, FIRST, SECOND, INSIDE, PASSED }
  * 터널 앞 단계 예고.
  * NaviHelper onTBTInfo가 다음 지점이 터널(TURN_TUNNEL)이라고 알려 주면, 남은 거리 ÷ 차 속도로
  * 몇 초 뒤에 들어가는지 계산해 1분 전(첫 예고 + 노래 + 내기순환), 30초 전(한 번 더) 두 번 말한다.
- * 힘들어했던 터널은 [leadSec]가 더 길게 준다 ([LeadPolicy]).
+ * 보호자가 표시한 순간이 있던 터널은 [leadSec]가 더 길게 준다 ([LeadPolicy]).
  */
 class TunnelCue(
     private val leadSec: (tunnelId: String) -> Int = { LeadPolicy.TUNNEL_DEFAULT_SEC },

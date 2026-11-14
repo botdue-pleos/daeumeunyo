@@ -42,12 +42,15 @@ object Demo {
     private fun at(day: Int, hour: Int, minute: Int) =
         LocalDateTime.of(2026, 11, day, hour, minute).atZone(zone).toInstant().toEpochMilli()
 
+    /** 오늘 이동의 시계 시작점. 시연 장면 하나가 1분: 터널 10:18, 길 바뀜 10:19, "표시해" 10:20 */
+    val todayStartMs: Long = at(14, 10, 14)
+
     const val MONTH_TRIPS = 12
 
     /**
      * 11월 한 달 이동 기록. 화면 속 숫자는 예시다.
      * 길 바뀜 4번 중 3번, 터널 9번 중 1번(집 앞 터널), 막힘 5번 중 0번, 벨트 풀림 1번.
-     * 길 바뀜 두 번째 힘듦(11/8) 뒤로 예고를 앞당겼고, 그 뒤 2주 동안은 1번.
+     * 길 바뀜 두 번째 표시(11/8) 뒤로 예고를 앞당겼고, 그 뒤 2주 동안은 1번.
      */
     fun monthLog(): MomentLog {
         val passages = mutableListOf<Passage>()

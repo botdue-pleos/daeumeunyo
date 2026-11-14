@@ -1,5 +1,7 @@
 package com.botdue.daeum.engine
 
+import kotlin.math.abs
+
 /** 동승자가 겪는 상황. 차량 신호로 자동 기록된다 */
 enum class Situation(val label: String) {
     REROUTE("길 바뀜"),
@@ -11,26 +13,42 @@ enum class Situation(val label: String) {
 /** 상황을 한 번 지나감. [key]는 같은 터널을 다시 알아보는 값 (터널 id) */
 data class Passage(val timeMs: Long, val situation: Situation, val key: String = "")
 
-/** 보호자가 "힘들어했어"라고 말한 순간 */
+/** 보호자가 "표시해"라고 말한 순간 (예전 말 "힘들어했어"도 같은 표시) */
 data class HardMark(val timeMs: Long)
+
+/** 표시 하나와 그 표시가 붙은 상황. 붙일 상황이 없으면 [passage]가 null ("상황 없음"으로 남긴다) */
+data class MarkedMoment(val mark: HardMark, val passage: Passage?)
 
 data class SituationRow(val situation: Situation, val passed: Int, val hard: Int)
 
 /**
- * 힘들었던 순간 기록. 진단이 아니라 보호자가 말한 순간을 그 직전 상황과 묶어 둘 뿐이다.
- * "힘들어했어"는 보통 상황이 끝난 뒤에 말하므로, [windowMs] 안에 있었던 가장 가까운 상황 하나에 붙인다.
+ * 표시한 순간 기록. 진단이 아니라 보호자가 표시한 순간을 가까운 상황과 묶어 둘 뿐이다.
+ * 표시는 보통 상황이 지난 뒤에 하지만, 낌새를 보고 미리 할 때도 있다.
+ * 그래서 표시 전 [beforeMs] 안에 지나간 상황, 또는 표시 뒤 [afterMs] 안에 시작된 상황 중 가장 가까운 것 하나에 붙인다.
+ * 붙일 상황이 없는 표시도 버리지 않는다 ([moments], [unattached]).
  */
 class MomentLog(
     val passages: List<Passage>,
     val marks: List<HardMark>,
-    private val windowMs: Long = 5 * 60_000,
+    private val beforeMs: Long = 5 * 60_000,
+    private val afterMs: Long = 60_000,
 ) {
-    /** 각 표시가 어느 상황에 붙었는지 */
-    val hardPassages: Set<Passage> by lazy {
-        marks.mapNotNull { m ->
-            passages.filter { it.timeMs <= m.timeMs && m.timeMs - it.timeMs <= windowMs }.maxByOrNull { it.timeMs }
-        }.toSet()
+    /** 표시 하나가 붙을 상황. 거리가 같으면 앞서 지나간 쪽 */
+    fun attach(mark: HardMark): Passage? =
+        passages
+            .filter { (it.timeMs - mark.timeMs) in -beforeMs..afterMs }
+            .minWithOrNull(compareBy<Passage>({ abs(it.timeMs - mark.timeMs) }, { it.timeMs > mark.timeMs }))
+
+    /** 모든 표시를 시간순으로, 붙은 상황과 함께 */
+    val moments: List<MarkedMoment> by lazy {
+        marks.sortedBy { it.timeMs }.map { MarkedMoment(it, attach(it)) }
     }
+
+    /** 각 표시가 어느 상황에 붙었는지 (같은 상황에 여러 번 표시해도 한 번) */
+    val hardPassages: Set<Passage> by lazy { moments.mapNotNull { it.passage }.toSet() }
+
+    /** 붙일 상황이 없었던 표시 수 */
+    val unattached: Int get() = moments.count { it.passage == null }
 
     fun rows(): List<SituationRow> = Situation.entries.map { s ->
         SituationRow(s, passages.count { it.situation == s }, hardPassages.count { it.situation == s })
@@ -41,15 +59,15 @@ class MomentLog(
             it.situation == situation && (key == null || it.key == key) && it.timeMs in fromMs..untilMs
         }
 
-    /** 어느 상황이 몇 번째 힘들었는지 시간순으로 */
+    /** 어느 상황에 표시한 때를 시간순으로 */
     fun hardTimes(situation: Situation): List<Long> =
         hardPassages.filter { it.situation == situation }.map { it.timeMs }.sorted()
 }
 
 /**
  * 기록을 다음 이동의 예고 시점에 반영하는 규칙. 단순하고 설명할 수 있게 둔다.
- * - 터널: 그 터널에서 한 번이라도 힘들어했으면 그 터널만 1분 → 2분 전부터
- * - 길 바뀜: 두 번 힘들어했으면 바뀐 길에서 꺾기 전 예고를 30초 → 1분 전으로
+ * - 터널: 그 터널에 한 번이라도 표시했으면 그 터널만 1분 → 2분 전부터
+ * - 길 바뀜: 두 번 표시했으면 바뀐 길에서 꺾기 전 예고를 30초 → 1분 전으로
  */
 class LeadPolicy(private val log: MomentLog) {
 
@@ -59,10 +77,10 @@ class LeadPolicy(private val log: MomentLog) {
     fun rerouteTurnLeadSec(): Int =
         if (log.hardCount(Situation.REROUTE) >= REROUTE_HARD_LIMIT) REROUTE_EARLY_SEC else REROUTE_DEFAULT_SEC
 
-    /** 길 바뀜 예고를 앞당긴 때. 그 전후 같은 기간 동안 힘들었던 횟수를 나란히 보여 주는 데 쓴다 */
+    /** 길 바뀜 예고를 앞당긴 때. 그 전후 같은 기간 동안 표시한 횟수를 나란히 보여 주는 데 쓴다 */
     fun rerouteChangedAt(): Long? = log.hardTimes(Situation.REROUTE).getOrNull(REROUTE_HARD_LIMIT - 1)
 
-    /** 앞당기기 전 [days]일(바꾼 날 포함)과 뒤 [days]일의 길 바뀜 힘든 횟수 */
+    /** 앞당기기 전 [days]일(바꾼 날 포함)과 뒤 [days]일의 길 바뀜 표시 횟수 */
     fun rerouteBeforeAfter(days: Int = 14): Pair<Int, Int>? {
         val at = rerouteChangedAt() ?: return null
         val span = days * DAY_MS

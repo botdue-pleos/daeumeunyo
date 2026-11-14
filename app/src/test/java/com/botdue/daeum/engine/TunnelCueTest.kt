@@ -51,7 +51,7 @@ class TunnelCueTest {
     }
 
     @Test
-    fun `힘들어했던 터널은 2분 전부터`() {
+    fun `표시한 순간이 있던 터널은 2분 전부터`() {
         val policy = LeadPolicy(Demo.monthLog())
         val cue = TunnelCue(leadSec = policy::tunnelLeadSec)
         // 1700m, 55km/h → 약 111초: 보통 터널은 아직, 집 앞 터널은 첫 예고

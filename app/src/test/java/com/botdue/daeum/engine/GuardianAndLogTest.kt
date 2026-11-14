@@ -1,6 +1,7 @@
 package com.botdue.daeum.engine
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -10,8 +11,17 @@ class GuardianAndLogTest {
     @Test
     fun `달리는 중 뒷자리 벨트가 풀리면 쉼터 안내와 함께 알린다`() {
         val alert = GuardianWatch().onBelt(0, Seat.REAR_RIGHT, buckled = false, moving = true, restAheadM = 600)!!
-        assertEquals("뒷자리 벨트가 풀렸어요", alert.title)
-        assertEquals("600m 앞에 세울 수 있는 쉼터가 있어요", alert.stopHint)
+        assertEquals("뒷자리 벨트를 한번 봐 주세요", alert.title)
+        assertEquals("600m 앞에 쉬어 갈 곳이 있어요", alert.stopHint)
+    }
+
+    @Test
+    fun `소리로 하는 말은 뒷자리가 들어도 괜찮은 말이다`() {
+        val belt = GuardianWatch().onBelt(0, Seat.REAR_RIGHT, buckled = false, moving = true, restAheadM = 600)!!
+        assertEquals("600m 앞에 쉬어 갈 곳이 있어요. 잠깐 쉬었다 갈까요?", belt.spoken)
+        assertFalse("벨트" in belt.spoken)
+        val window = GuardianWatch().onWindow(0, Seat.REAR_LEFT, 80, moving = true, restAheadM = null)!!
+        assertEquals("잠깐 쉬었다 갈까요?", window.spoken)
     }
 
     @Test
@@ -39,8 +49,19 @@ class GuardianAndLogTest {
     @Test
     fun `보호자 말 알아듣기`() {
         assertEquals(GuardianCommand.REST, GuardianSpeech.parse("잠깐 쉬자"))
-        assertEquals(GuardianCommand.HARD_MOMENT, GuardianSpeech.parse("아까 길 바뀔 때 힘들어했어"))
+        assertEquals(GuardianCommand.MARK, GuardianSpeech.parse("표시해"))
+        assertEquals(GuardianCommand.MARK, GuardianSpeech.parse("방금 표시 해 줘"))
+        assertEquals(GuardianCommand.MARK, GuardianSpeech.parse("아까 길 바뀔 때 힘들어했어"))
         assertNull(GuardianSpeech.parse("라디오 켜 줘"))
+    }
+
+    @Test
+    fun `안 힘들었다는 말은 표시하지 않는다`() {
+        assertNull(GuardianSpeech.parse("오늘은 안 힘들었어"))
+        assertNull(GuardianSpeech.parse("터널은 힘들지 않았어"))
+        assertNull(GuardianSpeech.parse("힘들진 않았어"))
+        assertNull(GuardianSpeech.parse("안 힘들어했어"))
+        assertNull(GuardianSpeech.parse("표시하지 마"))
     }
 
     @Test
@@ -52,13 +73,47 @@ class GuardianAndLogTest {
     }
 
     @Test
-    fun `힘든 순간은 5분 안 가장 가까운 상황에 붙는다`() {
+    fun `표시는 5분 안 가장 가까운 상황에 붙는다`() {
         val log = MomentLog(
             passages = listOf(Passage(0, Situation.TUNNEL, "t"), Passage(60_000, Situation.REROUTE)),
             marks = listOf(HardMark(120_000), HardMark(1_000_000)),
         )
         assertEquals(1, log.hardCount(Situation.REROUTE))
         assertEquals(0, log.hardCount(Situation.TUNNEL))
+    }
+
+    @Test
+    fun `표시 직후 60초 안에 시작된 상황에도 붙는다`() {
+        val log = MomentLog(
+            passages = listOf(Passage(40_000, Situation.TUNNEL, "t"), Passage(500_000, Situation.REROUTE)),
+            marks = listOf(HardMark(0), HardMark(300_000)),
+        )
+        // 0초 표시 → 40초 뒤 터널. 300초 표시 → 200초 뒤 길 바뀜은 60초를 넘어서 붙지 않고, 앞의 터널(260초 전)에 붙는다
+        assertEquals(listOf(Situation.TUNNEL, Situation.TUNNEL), log.moments.map { it.passage?.situation })
+        assertEquals(0, log.hardCount(Situation.REROUTE))
+    }
+
+    @Test
+    fun `앞뒤에 다 있으면 시간이 더 가까운 쪽`() {
+        val before = Passage(-120_000, Situation.TUNNEL, "t")
+        val after = Passage(30_000, Situation.REROUTE)
+        assertEquals(after, MomentLog(listOf(before, after), emptyList()).attach(HardMark(0)))
+        // 거리가 같으면 앞서 지나간 쪽
+        val sameBefore = Passage(-30_000, Situation.TRAFFIC)
+        assertEquals(sameBefore, MomentLog(listOf(sameBefore, after), emptyList()).attach(HardMark(0)))
+    }
+
+    @Test
+    fun `붙일 상황이 없는 표시는 버리지 않고 상황 없음으로 남긴다`() {
+        val log = MomentLog(
+            passages = listOf(Passage(0, Situation.TUNNEL, "t")),
+            marks = listOf(HardMark(60_000), HardMark(3_600_000)),
+        )
+        assertEquals(2, log.moments.size)
+        assertNull(log.moments[1].passage)
+        assertEquals(1, log.unattached)
+        // 상황별 숫자에는 들어가지 않는다
+        assertEquals(1, log.rows().sumOf { it.hard })
     }
 
     @Test
@@ -71,7 +126,7 @@ class GuardianAndLogTest {
     }
 
     @Test
-    fun `길 바뀜 두 번 힘들면 꺾기 예고를 1분 전으로, 전후 2주 비교`() {
+    fun `길 바뀜에 두 번 표시하면 꺾기 예고를 1분 전으로, 전후 2주 비교`() {
         val policy = LeadPolicy(Demo.monthLog())
         assertEquals(60, policy.rerouteTurnLeadSec())
         assertEquals(2 to 1, policy.rerouteBeforeAfter())
