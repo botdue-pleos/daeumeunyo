@@ -23,6 +23,17 @@
 > 2026 현대자동차그룹 차량용 앱 개발 공모전 "Code your App into Pleos App Market" 출품작, 팀 봇듀.
 > 차량 신호는 아직 시연용 시나리오(병원 가는 길)로 재생한다. Pleos SDK 연결은 [현재 상태](#현재-상태)에 적었다.
 
+## Pleos Connect 에뮬레이터에서 실제로 실행한 화면
+
+**Pleos Connect Emulator v2.1.0**(2560×1440, 160dpi)에 release APK를 설치해 실행한 전체 화면이다. 왼쪽은 Pleos 차량 상태, 가운데가 다음은요(세로 1칸), 오른쪽은 Pleos 지도. 가로 2칸은 지도 자리까지 펼친 화면이다. 차량 신호는 아직 시연용 데이터로 재생한다.
+
+<table>
+<tr><td width="50%"><img src="docs/pleos/START.jpg" alt="Pleos Connect 에뮬레이터: 출발 전 오늘의 길"></td><td width="50%"><img src="docs/pleos/REROUTE.jpg" alt="Pleos Connect 에뮬레이터: 길이 바뀌었을 때"></td></tr>
+<tr><td><b>출발 전 오늘의 길</b></td><td><b>길이 바뀌었을 때</b></td></tr>
+<tr><td width="50%"><img src="docs/pleos/MARKED.jpg" alt="Pleos Connect 에뮬레이터: 운전 중 "표시해""></td><td width="50%"><img src="docs/pleos/NOTES.jpg" alt="Pleos Connect 에뮬레이터: 가로 2칸: 이동 노트"></td></tr>
+<tr><td><b>운전 중 "표시해"</b></td><td><b>가로 2칸: 이동 노트</b></td></tr>
+</table>
+
 ## 왜 만들었나
 
 자폐 특성이 있는 사람에게 예상하지 못한 변화는 큰 불안의 원인이다. 그래서 그림 일정표와 "5분, 2분, 1분" 단계 예고가 널리 쓰인다.
@@ -104,15 +115,22 @@ adb shell am start -n com.botdue.daeum/.MainActivity --es step MARKED --ez quiet
 
 ## 테스트 환경
 
-- 개발: Android Studio, Kotlin(Jetpack Compose), minSdk 28
-- 테스트: Android Emulator(API 35). `adb shell wm size 920x1414` + `adb shell wm density 240`으로 Pleos Connect 앱 창 세로 1칸(920×1330)과 시스템 바에 맞춰 확인했다
-- 목표 플랫폼: Pleos Connect Emulator v2.1.0(AAOS). Pleos 이미지에서의 실연결 확인은 2차 PT 전에 할 예정이다 (아직 하지 않음)
-- 쓰는 SDK: 공모전에서 허용한 Vehicle·NaviHelper·TextToSpeech·SpeechToText만. 보호자 말은 SpeechToText SDK의 ON_DEVICE 모드로만 처리하고 외부 음성 인식 서비스로 보내지 않는다
+| 항목 | 내용 |
+| --- | --- |
+| 테스트 기기 | **Pleos Connect Emulator v2.1.0** (Android 14 · API 34 Automotive, 시스템 이미지 "Pleos Connect v2.1.0 APIs" arm64, 빌드 `RELEASE.release_connect_v2.1.0`), Android Emulator 35.2.10, macOS (Apple Silicon) |
+| 화면 규격 | AVD 프로필 Pleos Connect v2.1.0: **2560×1440, 160dpi(mdpi), 12.8인치**, RAM 4GB, Cold boot |
+| 앱 창 | 세로 1칸 **841×1210dp** (Pleos 화면에서 x 853~1694, y 90~1300), 가로 2칸 **1706×1210dp**. 앱은 설계 기준 창(세로 613×887dp, 가로 1247×887dp)을 실제 창 크기에 맞춰 통째로 비례 확대한다 (`ui/Theme.kt`의 `FitWindow`) |
+| 실행 확인 | release APK를 설치해 위 화면처럼 세로 1칸·가로 2칸에서 실행했다 ([Pleos 실제 화면](#pleos-connect-에뮬레이터에서-실제로-실행한-화면)) |
+| 화면 이미지(docs/screens) | 개발 중에는 Android Emulator(API 35)를 `wm size 920x1414`·`wm density 240`으로 앱 창 크기(920×1330px)만 맞춰 찍었다 |
+| 아직 안 한 것 | Vehicle·NaviHelper SDK 콜백 실연결 (지금 차량 신호는 시연용 데이터로 재생). 2차 PT 전에 Virtual Console(`adb forward tcp:8088 tcp:8088`)로 신호를 넣어 확인할 예정 |
+| 빌드 | Android Studio, Kotlin(Jetpack Compose), minSdk 28, Gradle 8.13 |
+| 쓰는 SDK | 공모전에서 허용한 Vehicle·NaviHelper·TextToSpeech·SpeechToText만. 보호자 말은 SpeechToText SDK의 ON_DEVICE 모드로만 처리하고 외부 음성 인식 서비스로 보내지 않는다 |
 
 ## 현재 상태
 
 - [x] 판정 엔진 + 단위 테스트 28개 (길 카드, 길 바뀜 문장, 터널 단계 예고, 보호자 알림·들리는 말, 말 알아듣기·부정 표현, 표시 묶기(앞 5분·뒤 60초·상황 없음), 예고 앞당기기)
 - [x] 화면 6종 + 시연 시나리오, 터널 노래 실제 재생·오디오 포커스 확인 (휴대폰 에뮬레이터)
+- [x] Pleos Connect Emulator v2.1.0에서 release APK 실행 확인, 실제 창 크기에 맞춰 비례 확대(FitWindow)
 - [x] v0.2.0: 운전 중 "표시해"(효과음·구석 칩), 도착 화면 보호자 확인 칸, 뒷자리가 들어도 괜찮은 알림 말
 - [x] 시연 영상 66초 (`docs/demo.mp4`, v0.2.0 에뮬레이터 실제 녹화 7장면: 운전 중 "표시해"와 도착 후 확인 포함)
 - [ ] Pleos Connect 에뮬레이터에서 NaviHelper·Vehicle 콜백 실제 연결 (`PleosSignalSource`)

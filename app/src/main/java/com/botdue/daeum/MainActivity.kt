@@ -53,6 +53,7 @@ import com.botdue.daeum.ui.StartScreen
 import com.botdue.daeum.ui.astaSans
 import com.botdue.daeum.ui.px
 import kotlinx.coroutines.delay
+import com.botdue.daeum.ui.FitWindow
 
 /** 표시 칩을 띄워 두는 시간 */
 private const val MARK_CHIP_MS = 4_000L
@@ -73,7 +74,7 @@ class MainActivity : ComponentActivity() {
         val quiet = intent.getBooleanExtra("quiet", false)
         // 캡처 모드(quiet 또는 clean): "시연: 다음" 칩을 숨기고, 표시 칩도 사라지지 않게 둔다
         val capture = quiet || intent.getBooleanExtra("clean", false)
-        setContent { DaeumApp(start, quiet, capture) }
+        setContent { FitWindow { DaeumApp(start, quiet, capture) } }
     }
 }
 
