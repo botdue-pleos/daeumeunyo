@@ -132,7 +132,7 @@ adb shell am start -n com.botdue.daeum/.MainActivity --es step MARKED --ez quiet
 - [x] 화면 6종 + 시연 시나리오, 터널 노래 실제 재생·오디오 포커스 확인 (휴대폰 에뮬레이터)
 - [x] Pleos Connect Emulator v2.1.0에서 release APK 실행 확인, 실제 창 크기에 맞춰 비례 확대(FitWindow)
 - [x] v0.2.0: 운전 중 "표시해"(효과음·구석 칩), 도착 화면 보호자 확인 칸, 뒷자리가 들어도 괜찮은 알림 말
-- [x] 시연 영상 66초 (`docs/demo.mp4`, v0.2.0 에뮬레이터 실제 녹화 7장면: 운전 중 "표시해"와 도착 후 확인 포함)
+- [x] 시연 영상 74초 (`docs/demo.mp4`, v0.2.0 에뮬레이터 실제 녹화 7장면: 운전 중 "표시해"와 도착 후 확인 포함, Pleos Connect Emulator v2.1.0 실제 실행 장면)
 - [ ] Pleos Connect 에뮬레이터에서 NaviHelper·Vehicle 콜백 실제 연결 (`PleosSignalSource`)
 - [ ] SDK 확인: 안전벨트를 좌석별로 구분해 받을 수 있는지, 앰비언트 라이트 제어, TBT로 터널 길이·끝 지점
 - [ ] 보호자 말 STT 연결 (말 알아듣기·표시 처리는 엔진에 있고, 시연에서는 MARKED 장면이 "표시해"를 대신 넣는다)
